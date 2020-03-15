@@ -1,14 +1,14 @@
 const express = require('express')
 const os = require('os')
 const fs = require('fs')
+const nodeDiskInfo = require('node-disk-info')
+const free = require("free-memory")
 const app = express()
 const port = 3000
 const api_version = 'v1.0'
 
-app.get('/',(req,res) => {
-    var data = fs.readFileSync('/sys/class/thermal/thermal_zone0/temp','utf8').split('\n')
-    var temp 
-    res.send(`Temp: ${data}`)
+app.get('/pi_mon',(req,res) => {
+    res.json({version: api_version, host: os.hostname()})
 })
 
 app.get('/pi_mon/temperature',(req,res) => {
@@ -19,6 +19,33 @@ app.get('/pi_mon/temperature',(req,res) => {
         cpu_temperature: `${ data.trim() / 1000}C`
      }
     res.json(result)
+})
+
+app.get('/pi_mon/disks', (req,res) => {
+    const disks = nodeDiskInfo.getDiskInfoSync();
+    res.json({
+        version: api_version,
+        host: os.hostname(),
+        data: disks
+    })
+})
+
+app.get('/pi_mon/memory', (req,res) => {
+    free(function(err, info) {
+        res.json({
+            version: api_version,
+            host: os.hostname(),
+            data: info
+        })
+    })
+})
+
+app.get('/pi_mon/cpus', (req, res) => {
+    res.json({
+        version: api_version,
+        host: os.hostname(),
+        data: os.cpus()        
+    })
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}`))
