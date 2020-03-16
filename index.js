@@ -48,4 +48,12 @@ app.get('/pi_mon/cpus', (req, res) => {
     })
 })
 
+app.get('/pi_mon/loadavg', (req, res) => {
+    res.json({
+        version: api_version,
+        host: os.hostname(),
+        data: os.loadavg()
+    })
+})
+
 app.listen(port, () => console.log(`Listening on port ${port}`))
